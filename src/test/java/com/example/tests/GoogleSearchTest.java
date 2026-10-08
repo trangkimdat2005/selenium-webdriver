@@ -4,6 +4,7 @@ import com.example.BaseTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
@@ -30,26 +31,31 @@ public class GoogleSearchTest extends BaseTest {
         quitDriver();
     }
 
-    @Test(description = "Tìm kiếm 'Selenium WebDriver' trên Google và kiểm tra kết quả")
+    @Test(description = "Tìm kiếm 'Selenium WebDriver' trên DuckDuckGo và kiểm tra kết quả")
     public void shouldReturnResultsWhenSearchingSelenium() {
-        driver.get("https://www.google.com");
+        // DuckDuckGo thân thiện với automation hơn Google
+        driver.get("https://duckduckgo.com");
 
-        // Ô tìm kiếm có thể là 'q' (desktop) hoặc 'APjFqb' (tùy region)
+        // Ô tìm kiếm của DuckDuckGo
         WebElement searchBox = waitForVisible(By.name("q"));
         searchBox.clear();
         searchBox.sendKeys("Selenium WebDriver", Keys.ENTER);
 
-        // Chờ kết quả xuất hiện (selector chung: tiêu đề kết quả)
-        List<WebElement> results = wait.until(
-                driver -> driver.findElements(By.cssSelector("h3"))
+        // Chờ URL chuyển sang trang kết quả (chứa "q=Selenium")
+        wait.until(ExpectedConditions.urlContains("q=Selenium"));
+
+        // Xác minh qua URL và title
+        String url = driver.getCurrentUrl();
+        Assert.assertTrue(url.contains("q=Selenium") || url.contains("q=selenium"),
+                "URL phải chứa query, thực tế: " + url);
+        Assert.assertTrue(driver.getTitle().toLowerCase().contains("selenium"),
+                "Title phải chứa từ khóa tìm kiếm, thực tế: " + driver.getTitle());
+
+        // Chờ link kết quả xuất hiện
+        List<WebElement> resultLinks = wait.until(driver ->
+                driver.findElements(By.cssSelector("a[data-testid='result-title-a']"))
         );
-
-        Assert.assertTrue(results.size() > 0, "Phải có ít nhất 1 kết quả tìm kiếm");
-
-        boolean hasSeleniumResult = results.stream()
-                .anyMatch(e -> e.getText().toLowerCase().contains("selenium"));
-        Assert.assertTrue(hasSeleniumResult,
-                "Phải có kết quả chứa từ 'selenium', tìm thấy: "
-                        + results.stream().map(WebElement::getText).limit(3).toList());
+        Assert.assertTrue(resultLinks.size() > 0,
+                "Phải có ít nhất 1 link kết quả, tìm thấy 0");
     }
 }
