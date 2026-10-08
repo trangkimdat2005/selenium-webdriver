@@ -233,6 +233,20 @@ public class LoginTest extends BaseTest {
                 "Lộ thông tin SQL/database. Err: " + err);
     }
 
+    /** TC_FN_14 - Chống SQL Injection ở ô Password. */
+    @Test(description = "TC_FN_14 - SQL Injection ở Password")
+    public void tc_fn_14_sqlInjectionPassword() {
+        loginPage.typeUsername(validUsername)
+                 .typePassword("' OR '1'='1")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "SQLi password có thể bypass! URL: " + loginPage.getCurrentUrl());
+        String err = loginPage.getLoginErrorMessage();
+        Assert.assertFalse(err.toLowerCase().contains("sql")
+                && err.toLowerCase().contains("error"),
+                "Lộ thông tin SQL/database. Err: " + err);
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
