@@ -348,6 +348,19 @@ public class LoginTest extends BaseTest {
                 "Server lỗi khi nhập ký tự đặc biệt. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_VAL_07 - Giữ lại Username sau khi đăng nhập thất bại. */
+    @Test(description = "TC_VAL_07 - Giữ lại Username sau khi đăng nhập thất bại")
+    public void tc_val_07_keepUsernameAfterFailure() {
+        String username = validUsername.isEmpty() ? "test_user" : validUsername;
+        loginPage.typeUsername(username)
+                 .typePassword("wrong_password")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Form không báo lỗi tại chỗ. URL: " + loginPage.getCurrentUrl());
+        Assert.assertEquals(loginPage.getUsernameValue(), username,
+                "Ô Username phải giữ lại giá trị đã nhập");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
