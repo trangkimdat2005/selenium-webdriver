@@ -392,6 +392,29 @@ public class LoginTest extends BaseTest {
                 "Đăng nhập không tick Remember Me thất bại. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_REM_03 - Đăng xuất khi đang bật "Giữ đăng nhập". */
+    @Test(description = "TC_REM_03 - Đăng xuất khi đang bật Giữ đăng nhập")
+    public void tc_rem_03_logoutAfterRememberMe() {
+        Assert.assertFalse(validUsername.isEmpty(),
+                "Cần valid.username trong testdata.properties");
+        loginPage.typeUsername(validUsername)
+                 .typePassword(validPassword)
+                 .tickRememberMe()
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isLoggedIn(), "Không đăng nhập được");
+        org.openqa.selenium.By logoutBtn = org.openqa.selenium.By.cssSelector(
+                "a[href*='Logout'], a[href*='logout']");
+        try {
+            driver.findElement(logoutBtn).click();
+        } catch (Exception e) {
+            driver.get(LOGIN_URL);
+        }
+        driver.get("https://vanphongdientu.utc.edu.vn/");
+        String url = loginPage.getCurrentUrl();
+        Assert.assertTrue(url != null && url.toLowerCase().contains("/login"),
+                "Sau đăng xuất, mở lại vẫn còn đăng nhập. URL: " + url);
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
