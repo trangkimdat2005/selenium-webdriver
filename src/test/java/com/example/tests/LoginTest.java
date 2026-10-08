@@ -291,6 +291,23 @@ public class LoginTest extends BaseTest {
                 "Phải báo lỗi yêu cầu nhập Username");
     }
 
+    /** TC_VAL_03 - Để trống Mật khẩu. */
+    @Test(description = "TC_VAL_03 - Để trống Mật khẩu")
+    public void tc_val_03_emptyPassword() {
+        String username = validUsername.isEmpty() ? "username" : validUsername;
+        loginPage.typeUsername(username)
+                 .typePassword("")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Password trống mà form submit. URL: " + loginPage.getCurrentUrl());
+        String p = loginPage.getPasswordFieldError();
+        String e = loginPage.getLoginErrorMessage();
+        Assert.assertTrue(!p.isEmpty() || !e.isEmpty(),
+                "Phải báo lỗi yêu cầu nhập Password");
+        Assert.assertEquals(loginPage.getUsernameValue(), username,
+                "Username đã nhập phải được giữ lại sau khi đăng nhập thất bại");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
