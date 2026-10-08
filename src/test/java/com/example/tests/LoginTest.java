@@ -129,6 +129,21 @@ public class LoginTest extends BaseTest {
                 "Phải hiển thị thông báo lỗi khi username không tồn tại");
     }
 
+    /** TC_FN_06 - Tài khoản bị khóa. */
+    @Test(description = "TC_FN_06 - Tài khoản bị khóa/vô hiệu hóa")
+    public void tc_fn_06_lockedAccount() {
+        Assert.assertFalse(lockedUsername.isEmpty(),
+                "Cần cấu hình locked.username trong testdata.properties");
+        loginPage.typeUsername(lockedUsername)
+                 .typePassword(lockedPassword)
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "TK bị khóa mà lại đăng nhập được. URL: " + loginPage.getCurrentUrl());
+        String err = loginPage.getLoginErrorMessage();
+        Assert.assertFalse(err.isEmpty(),
+                "Phải hiển thị thông báo tài khoản bị khóa/liên hệ quản trị");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
