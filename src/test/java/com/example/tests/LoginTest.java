@@ -379,6 +379,19 @@ public class LoginTest extends BaseTest {
                 "Sau Remember Me phải đăng nhập thành công");
     }
 
+    /** TC_REM_02 - Không tick "Giữ đăng nhập". */
+    @Test(description = "TC_REM_02 - Đăng nhập không tick 'Giữ đăng nhập'")
+    public void tc_rem_02_noRememberMeLogin() {
+        Assert.assertFalse(validUsername.isEmpty(),
+                "Cần valid.username trong testdata.properties");
+        loginPage.typeUsername(validUsername)
+                 .typePassword(validPassword)
+                 .uncheckRememberMe()
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isLoggedIn(),
+                "Đăng nhập không tick Remember Me thất bại. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
