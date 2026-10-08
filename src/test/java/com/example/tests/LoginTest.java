@@ -116,6 +116,19 @@ public class LoginTest extends BaseTest {
                 "Phải hiển thị thông báo lỗi khi sai mật khẩu, nhưng không thấy");
     }
 
+    /** TC_FN_05 - Đăng nhập với tên đăng nhập không tồn tại. */
+    @Test(description = "TC_FN_05 - Tên đăng nhập không tồn tại")
+    public void tc_fn_05_loginWithUnknownUsername() {
+        loginPage.typeUsername("khongtontai_9999")
+                 .typePassword("anypassword")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Username không tồn tại mà lại đăng nhập được. URL: " + loginPage.getCurrentUrl());
+        String err = loginPage.getLoginErrorMessage();
+        Assert.assertFalse(err.isEmpty(),
+                "Phải hiển thị thông báo lỗi khi username không tồn tại");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
