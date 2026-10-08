@@ -1,0 +1,99 @@
+---
+description: Commit & push rules — each test case is one separate commit using the required format
+globs:
+alwaysApply: true
+---
+
+# Commit & Push Rules
+
+## Golden Rule
+
+**One test case = one commit.** Never combine multiple test cases into a single commit.
+
+## Commit Message Format
+
+```
+<type> <TC_ID> <short description>
+```
+
+### Commit Types
+
+| Type     | Meaning                                  | Example                                              |
+| -------- | ---------------------------------------- | ---------------------------------------------------- |
+| `add`    | Add a new test case / test file          | `add TC01 login with valid credentials`              |
+| `test`   | Write / finalize a test case             | `test TC01 login with valid credentials`             |
+| `update` | Update an existing test case             | `update TC01 login with valid credentials`           |
+| `fix`    | Fix a bug in a test case                 | `fix TC01 login with valid credentials`              |
+| `delete` | Remove a test case                       | `delete TC01 login with valid credentials`           |
+
+### Test Case ID (TC_ID)
+
+- Use the format `TC` + 2-digit number: `TC01`, `TC02`, `TC03`, ... `TC99`, then `TC100`, `TC101`, ...
+- Before assigning a new TC_ID, check `git log` for the highest existing one to avoid duplicates.
+- Each test case keeps its TC_ID throughout its lifecycle: if you `add TC03`, then `update TC03`, `fix TC03` later must use the same `TC03`.
+
+### Description
+
+- **All lowercase**, no capital letters.
+- Short and focused on the behavior under test.
+- **No trailing period.**
+- **English only** — do not mix Vietnamese into commit messages.
+
+## Mandatory Workflow When Asked to Commit / Push
+
+1. **Identify the test case**: read the recent code change and identify which test case was created/edited.
+2. **Find the next TC_ID**: run `git log --oneline -n 100` and find the highest existing TC_ID; the new one is the next number in sequence.
+3. **Stage only the relevant file(s)**: `git add <specific test file>` — **never** use `git add .` to avoid pulling in unrelated changes.
+4. **Commit** with the exact format:
+   ```bash
+   git commit -m "test TC03 login with wrong password"
+   ```
+5. **STOP and ask me** before pushing — wait for my explicit confirmation.
+6. After I approve, push:
+   ```bash
+   git push origin <current-branch>
+   ```
+
+## End-to-End Examples
+
+I say: *"write a test case for successful login"*
+
+Agent follows the workflow:
+
+```bash
+# 1. Create/edit the test file
+# 2. git add tests/login.test.js
+# 3. git commit -m "test TC01 login with valid credentials"
+# 4. STOP — ask: "Committed as 'test TC01 login with valid credentials'. Do you want to push to origin?"
+```
+
+I say: *"fix the bug in the successful login test case"*
+
+Agent follows the workflow:
+
+```bash
+# 1. Edit tests/login.test.js
+# 2. git add tests/login.test.js
+# 3. git commit -m "fix TC01 login with valid credentials"
+# 4. STOP — ask before pushing
+```
+
+I say: *"add test case for login with empty fields"*
+
+Agent follows the workflow:
+
+```bash
+# 1. Create/edit the test file
+# 2. git add tests/login.test.js
+# 3. git commit -m "test TC02 login with empty fields"
+# 4. STOP — ask before pushing
+```
+
+## What NOT to Do
+
+- ❌ Combine multiple test cases in one commit: `git commit -m "test TC01, TC02, TC03 ..."`
+- ❌ Use `git add .` then commit — risks bundling unrelated changes.
+- ❌ Push without asking first.
+- ❌ Reuse a TC_ID that already exists.
+- ❌ Use capital letters, trailing periods, or Vietnamese in commit messages.
+- ❌ Skip the TC_ID (e.g. `test login with valid credentials` is invalid).
