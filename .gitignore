@@ -33,3 +33,9 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local overrides for credentials (do not commit).
+# Copy testdata.properties → testdata.local.properties rồi điền tài khoản,
+# file này đã được gitignore để tránh lộ credentials lên remote.
+testdata.local.properties
+**/testdata.local.properties
