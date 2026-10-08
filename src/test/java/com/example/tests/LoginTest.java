@@ -80,6 +80,17 @@ public class LoginTest extends BaseTest {
     // ========================================================================
     // Các TC tiếp theo sẽ được thêm từng commit theo workspace rule
     // ========================================================================
+        /** TC_FN_02 - Đăng nhập bằng phím Enter. */
+    @Test(description = "TC_FN_02 - Đăng nhập bằng phím Enter")
+    public void tc_fn_02_loginWithEnterKey() {
+        loginPage.typeUsername(validUsername)
+                 .typePassword(validPassword)
+                 .submitWithEnterOnPassword();
+        Assert.assertTrue(loginPage.isLoggedIn(),
+                "Phím Enter không submit form. URL: " + loginPage.getCurrentUrl());
+    }
+
+// ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
     protected static String swapCase(String s) {
