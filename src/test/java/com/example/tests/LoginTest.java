@@ -415,7 +415,6 @@ public class LoginTest extends BaseTest {
                 "Sau đăng xuất, mở lại vẫn còn đăng nhập. URL: " + url);
     }
 
-// ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
     protected static String swapCase(String s) {
