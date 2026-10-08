@@ -155,6 +155,20 @@ public class LoginTest extends BaseTest {
                 "Mật khẩu sai hoa/thường mà vẫn đăng nhập được. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_FN_08 - Tên đăng nhập có khoảng trắng đầu/cuối. */
+    @Test(description = "TC_FN_08 - Username có khoảng trắng đầu/cuối")
+    public void tc_fn_08_usernameWithLeadingTrailingSpaces() {
+        loginPage.typeUsername("  " + validUsername + "  ")
+                 .typePassword(validPassword)
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isLoggedIn() || loginPage.isOnLoginPage(),
+                "Trạng thái không xác định. URL: " + loginPage.getCurrentUrl());
+        if (loginPage.isOnLoginPage()) {
+            Assert.assertFalse(loginPage.getLoginErrorMessage().isEmpty(),
+                    "Khoảng trắng username: nên trim hoặc báo lỗi");
+        }
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
