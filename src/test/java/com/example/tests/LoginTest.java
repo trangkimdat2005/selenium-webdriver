@@ -219,6 +219,20 @@ public class LoginTest extends BaseTest {
                 "Double-click gây lỗi. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_FN_13 - Chống SQL Injection ở ô Username. */
+    @Test(description = "TC_FN_13 - SQL Injection ở Username")
+    public void tc_fn_13_sqlInjectionUsername() {
+        loginPage.typeUsername("admin' OR '1'='1' --")
+                 .typePassword("anything")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "SQLi username có thể bypass! URL: " + loginPage.getCurrentUrl());
+        String err = loginPage.getLoginErrorMessage();
+        Assert.assertFalse(err.toLowerCase().contains("sql")
+                && err.toLowerCase().contains("error"),
+                "Lộ thông tin SQL/database. Err: " + err);
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
