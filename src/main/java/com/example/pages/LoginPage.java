@@ -3,6 +3,7 @@ package com.example.pages;
 import java.time.Duration;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -18,14 +19,17 @@ public class LoginPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
 
-    // --- Locators ---
-    private final By usernameInput = By.cssSelector("input[name='username']");   // Tên đăng nhập
-    private final By passwordInput = By.cssSelector("input[name='userpwd']");    // Mật khẩu
+    // --- Locators (khớp DOM thật UTC, đã verify qua LoginDomProbe 2026-10-08) ---
+    private final By usernameInput = By.cssSelector("input[name='username']");
+    private final By passwordInput = By.cssSelector("input[name='userpwd']");
     private final By loginButton   = By.cssSelector("input.submit_login[type='submit']");
-    private final By rememberMe    = By.id("persistent");                          // "Giữ tôi luôn đăng nhập"
-    private final By loginErrorMsg = By.cssSelector(".alert-danger, .error-message, .text-danger, [role='alert']");
-    private final By usernameError = By.cssSelector("[data-valmsg-for='username'], .field-error.username");
-    private final By passwordError = By.cssSelector("[data-valmsg-for='userpwd'], .field-error.password");
+    private final By rememberMe    = By.id("persistent");
+    private final By rememberLabel = By.cssSelector("label.check[for='persistent']");
+    // Site thật chỉ có 1 div.error chung (sai pass / trống / không tồn tại).
+    // Không có [data-valmsg-for] hay class alert-danger / text-danger.
+    private final By loginErrorMsg = By.cssSelector("div.error");
+    private final By usernameError = By.cssSelector("div.error");
+    private final By passwordError = By.cssSelector("div.error");
     private final By userMenu      = By.cssSelector(".user-info, .user-menu, .account, [data-testid='user-menu']");
 
     public LoginPage(WebDriver driver) {
@@ -58,16 +62,38 @@ public class LoginPage {
         return this;
     }
 
+    /**
+     * Tick Remember Me. Checkbox `#persistent` bị `display:none` (site dùng
+     * <label class="check"> làm giao diện) nên click qua label hoặc set checked bằng JS.
+     */
     public LoginPage tickRememberMe() {
-        WebElement el = waitForClickable(rememberMe);
-        if (!el.isSelected()) el.click();
+        toggleRememberMe(true);
         return this;
     }
 
     public LoginPage uncheckRememberMe() {
-        WebElement el = waitForClickable(rememberMe);
-        if (el.isSelected()) el.click();
+        toggleRememberMe(false);
         return this;
+    }
+
+    private void toggleRememberMe(boolean wantChecked) {
+        WebElement cb = driver.findElement(rememberMe);
+        boolean current = cb.isSelected();
+        if (current == wantChecked) return;
+        try {
+            driver.findElement(rememberLabel).click();
+            return;
+        } catch (Exception ignored) {}
+        ((JavascriptExecutor) driver).executeScript(
+            "var c=document.getElementById('persistent');"
+          + "if(c){c.checked=" + wantChecked + ";"
+          + "c.dispatchEvent(new Event('change',{bubbles:true}));}", cb);
+    }
+
+    /** Trả về true nếu checkbox Remember Me đang được tick. */
+    public boolean isRememberMeChecked() {
+        try { return driver.findElement(rememberMe).isSelected(); }
+        catch (Exception e) { return false; }
     }
 
     public LoginPage clickLogin() {
