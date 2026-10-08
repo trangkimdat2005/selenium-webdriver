@@ -183,6 +183,18 @@ public class LoginTest extends BaseTest {
         }
     }
 
+    /** TC_FN_10 - Đăng nhập khi đã đăng nhập sẵn. */
+    @Test(description = "TC_FN_10 - Đã đăng nhập thì vào lại /Login")
+    public void tc_fn_10_alreadyLoggedIn() {
+        Assert.assertFalse(validUsername.isEmpty(),
+                "Cần valid.username trong testdata.properties");
+        driver.manage().addCookie(new org.openqa.selenium.Cookie(".AspNetCore.Session",
+                "fake-session-cookie", "vanphongdientu.utc.edu.vn", "/", false));
+        loginPage.open(LOGIN_URL);
+        Assert.assertFalse(loginPage.isOnLoginPage(),
+                "Đã đăng nhập rồi nhưng vào /Login vẫn ở login. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
