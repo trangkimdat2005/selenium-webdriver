@@ -323,6 +323,19 @@ public class LoginTest extends BaseTest {
                 "Phải báo lỗi bắt buộc nhập khi chỉ có khoảng trắng");
     }
 
+    /** TC_VAL_05 - Nhập chuỗi rất dài. */
+    @Test(description = "TC_VAL_05 - Nhập chuỗi rất dài (1000 ký tự)")
+    public void tc_val_05_veryLongString() {
+        String longStr = "a".repeat(1000);
+        loginPage.typeUsername(longStr)
+                 .typePassword(longStr)
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Chuỗi 1000 ký tự submit đi và thoát khỏi login. URL: " + loginPage.getCurrentUrl());
+        Assert.assertFalse(loginPage.getCurrentUrl().contains("error"),
+                "Có vẻ server lỗi (500) khi nhập chuỗi dài. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
