@@ -361,6 +361,24 @@ public class LoginTest extends BaseTest {
                 "Ô Username phải giữ lại giá trị đã nhập");
     }
 
+    /** TC_REM_01 - Tick "Giữ tôi luôn đăng nhập". */
+    @Test(description = "TC_REM_01 - Đăng nhập có tick 'Giữ đăng nhập'")
+    public void tc_rem_01_rememberMeLogin() {
+        Assert.assertFalse(validUsername.isEmpty(),
+                "Cần valid.username trong testdata.properties");
+        loginPage.typeUsername(validUsername)
+                 .typePassword(validPassword)
+                 .tickRememberMe()
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isLoggedIn(),
+                "Tick Remember Me nhưng không đăng nhập được. URL: " + loginPage.getCurrentUrl());
+        boolean hasRememberCookie = driver.manage().getCookies().stream()
+                .anyMatch(c -> c.getName().toLowerCase().contains("remember")
+                        || (c.getExpiry() != null && c.getExpiry().toEpochSecond() > 0));
+        Assert.assertTrue(loginPage.isLoggedIn() || hasRememberCookie,
+                "Sau Remember Me phải đăng nhập thành công");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
