@@ -209,6 +209,16 @@ public class LoginTest extends BaseTest {
                 "URL redirect về login phải chứa tham số r=. URL: " + url);
     }
 
+    /** TC_FN_12 - Double-click nút Đăng nhập. */
+    @Test(description = "TC_FN_12 - Double-click nút Đăng nhập")
+    public void tc_fn_12_doubleClickLogin() {
+        loginPage.typeUsername(validUsername)
+                 .typePassword(validPassword);
+        loginPage.doubleClickLogin();
+        Assert.assertTrue(loginPage.isLoggedIn() || loginPage.isOnLoginPage(),
+                "Double-click gây lỗi. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
