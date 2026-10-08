@@ -336,6 +336,18 @@ public class LoginTest extends BaseTest {
                 "Có vẻ server lỗi (500) khi nhập chuỗi dài. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_VAL_06 - Ký tự đặc biệt / Unicode / emoji. */
+    @Test(description = "TC_VAL_06 - Ký tự đặc biệt, Unicode, emoji")
+    public void tc_val_06_specialCharsUnicode() {
+        loginPage.typeUsername("!@#$%^&*()Nguyễn😀")
+                 .typePassword("!@#$%^&*()Nguyễn😀")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Ký tự đặc biệt gây thoát khỏi login. URL: " + loginPage.getCurrentUrl());
+        Assert.assertFalse(loginPage.getCurrentUrl().toLowerCase().contains("error"),
+                "Server lỗi khi nhập ký tự đặc biệt. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
