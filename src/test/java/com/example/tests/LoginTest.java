@@ -1,14 +1,20 @@
 package com.example.tests;
 
-import com.example.BaseTest;
-import com.example.pages.LoginPage;
-import org.testng.Assert;
-import org.testng.ITestResult;
-import org.testng.annotations.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import org.testng.Assert;
+import org.testng.ITestResult;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+
+import com.example.BaseTest;
+import com.example.pages.LoginPage;
 
 /**
  * Test các chức năng đăng nhập Văn phòng điện tử UTC.
@@ -188,8 +194,10 @@ public class LoginTest extends BaseTest {
     public void tc_fn_10_alreadyLoggedIn() {
         Assert.assertFalse(validUsername.isEmpty(),
                 "Cần valid.username trong testdata.properties");
-        driver.manage().addCookie(new org.openqa.selenium.Cookie(".AspNetCore.Session",
-                "fake-session-cookie", "vanphongdientu.utc.edu.vn", "/", false));
+        driver.manage().addCookie(new org.openqa.selenium.Cookie.Builder(".AspNetCore.Session", "fake-session-cookie")
+                .domain("vanphongdientu.utc.edu.vn")
+                .path("/")
+                .build());
         loginPage.open(LOGIN_URL);
         Assert.assertFalse(loginPage.isOnLoginPage(),
                 "Đã đăng nhập rồi nhưng vào /Login vẫn ở login. URL: " + loginPage.getCurrentUrl());
@@ -374,7 +382,7 @@ public class LoginTest extends BaseTest {
                 "Tick Remember Me nhưng không đăng nhập được. URL: " + loginPage.getCurrentUrl());
         boolean hasRememberCookie = driver.manage().getCookies().stream()
                 .anyMatch(c -> c.getName().toLowerCase().contains("remember")
-                        || (c.getExpiry() != null && c.getExpiry().toEpochSecond() > 0));
+                        || (c.getExpiry() != null && c.getExpiry().toInstant().getEpochSecond() > 0));
         Assert.assertTrue(loginPage.isLoggedIn() || hasRememberCookie,
                 "Sau Remember Me phải đăng nhập thành công");
     }
