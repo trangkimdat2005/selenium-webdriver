@@ -6,10 +6,11 @@
         <!-- Có thể thêm listener tùy biến ở đây -->
     </listeners>
 
-    <test name="Edge Tests">
-        <parameter name="browser" value="edge"/>
+    <test name="Chrome Tests">
+        <parameter name="browser" value="chrome"/>
         <classes>
             <class name="com.example.tests.GoogleSearchTest"/>
+            <class name="com.example.tests.LoginTest"/>
         </classes>
     </test>
 
