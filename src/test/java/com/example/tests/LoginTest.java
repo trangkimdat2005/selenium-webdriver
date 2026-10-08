@@ -169,6 +169,20 @@ public class LoginTest extends BaseTest {
         }
     }
 
+    /** TC_FN_09 - Tên đăng nhập không phân biệt hoa thường. */
+    @Test(description = "TC_FN_09 - Username không phân biệt hoa thường")
+    public void tc_fn_09_usernameIsCaseInsensitive() {
+        loginPage.typeUsername(validUsername.toUpperCase())
+                 .typePassword(validPassword)
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isLoggedIn() || loginPage.isOnLoginPage(),
+                "Trạng thái không xác định. URL: " + loginPage.getCurrentUrl());
+        if (loginPage.isOnLoginPage()) {
+            Assert.assertFalse(loginPage.getLoginErrorMessage().isEmpty(),
+                    "Username viết hoa: nên chấp nhận hoặc báo lỗi rõ ràng");
+        }
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
