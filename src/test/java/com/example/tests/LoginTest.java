@@ -277,6 +277,20 @@ public class LoginTest extends BaseTest {
                 "Phải báo lỗi yêu cầu nhập Username và Password");
     }
 
+    /** TC_VAL_02 - Để trống Tên đăng nhập. */
+    @Test(description = "TC_VAL_02 - Để trống Tên đăng nhập")
+    public void tc_val_02_emptyUsername() {
+        loginPage.typeUsername("")
+                 .typePassword("Abc@123")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Username trống mà form submit. URL: " + loginPage.getCurrentUrl());
+        String u = loginPage.getUsernameFieldError();
+        String e = loginPage.getLoginErrorMessage();
+        Assert.assertTrue(!u.isEmpty() || !e.isEmpty(),
+                "Phải báo lỗi yêu cầu nhập Username");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
