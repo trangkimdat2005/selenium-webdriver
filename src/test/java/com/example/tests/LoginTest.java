@@ -90,6 +90,19 @@ public class LoginTest extends BaseTest {
                 "Phím Enter không submit form. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_FN_03 - Chuyển hướng theo tham số r. */
+    @Test(description = "TC_FN_03 - Chuyển hướng theo tham số r")
+    public void tc_fn_03_redirectByParamR() {
+        String r = "https://vanphongdientu.utc.edu.vn/";
+        driver.get(LOGIN_URL + "?r=" + java.net.URLEncoder.encode(r, java.nio.charset.StandardCharsets.UTF_8));
+        loginPage.waitForPageLoaded();
+        loginPage.typeUsername(validUsername)
+                 .typePassword(validPassword)
+                 .clickLogin();
+        Assert.assertFalse(loginPage.isOnLoginPage(),
+                "Vẫn còn ở trang login, không chuyển hướng. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
