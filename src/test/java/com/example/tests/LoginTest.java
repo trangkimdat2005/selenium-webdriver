@@ -195,6 +195,20 @@ public class LoginTest extends BaseTest {
                 "Đã đăng nhập rồi nhưng vào /Login vẫn ở login. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_FN_11 - Truy cập trang nội bộ khi chưa đăng nhập. */
+    @Test(description = "TC_FN_11 - Truy cập trang nội bộ khi chưa đăng nhập")
+    public void tc_fn_11_protectInternalPages() {
+        String internal = "https://vanphongdientu.utc.edu.vn/";
+        driver.get(internal);
+        new org.openqa.selenium.support.ui.WebDriverWait(driver, java.time.Duration.ofSeconds(10))
+                .until(d -> d.getCurrentUrl() != null);
+        String url = loginPage.getCurrentUrl();
+        Assert.assertTrue(url != null && url.toLowerCase().contains("/login"),
+                "Chưa đăng nhập mà không bị redirect về /Login. URL: " + url);
+        Assert.assertTrue(url.contains("r="),
+                "URL redirect về login phải chứa tham số r=. URL: " + url);
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
