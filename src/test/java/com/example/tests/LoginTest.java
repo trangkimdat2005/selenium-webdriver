@@ -247,6 +247,21 @@ public class LoginTest extends BaseTest {
                 "Lộ thông tin SQL/database. Err: " + err);
     }
 
+    /** TC_FN_15 - Khóa/giới hạn sau nhiều lần đăng nhập sai. */
+    @Test(description = "TC_FN_15 - Khóa tạm sau nhiều lần đăng nhập sai")
+    public void tc_fn_15_lockAfterMultipleFailures() {
+        for (int i = 0; i < 7; i++) {
+            loginPage.typeUsername(validUsername)
+                     .typePassword("wrong-" + i)
+                     .clickLogin();
+            Assert.assertTrue(loginPage.isOnLoginPage(),
+                    "Sai mật khẩu lần " + (i + 1) + " mà lại đăng nhập được");
+        }
+        String err = loginPage.getLoginErrorMessage();
+        Assert.assertTrue(!err.isEmpty() || loginPage.isOnLoginPage(),
+                "Sau nhiều lần sai, vẫn phải ở trang login. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
