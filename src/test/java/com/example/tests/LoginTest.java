@@ -64,7 +64,21 @@ public class LoginTest extends BaseTest {
     }
 
     // ========================================================================
-    // Các TC sẽ được thêm vào từng commit theo workspace rule (1 TC = 1 commit)
+    // NHÓM A: TC_FN_01 .. TC_FN_05  (Đăng nhập cơ bản + Sai mật khẩu)
+    // ========================================================================
+
+    /** TC_FN_01 - Đăng nhập thành công với tài khoản hợp lệ. */
+    @Test(description = "TC_FN_01 - Đăng nhập thành công với tài khoản hợp lệ")
+    public void tc_fn_01_loginSuccessWithValidAccount() {
+        loginPage.typeUsername(validUsername)
+                 .typePassword(validPassword)
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isLoggedIn(),
+                "Đăng nhập thất bại với tài khoản hợp lệ. URL: " + loginPage.getCurrentUrl());
+    }
+
+    // ========================================================================
+    // Các TC tiếp theo sẽ được thêm từng commit theo workspace rule
     // ========================================================================
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
