@@ -144,6 +144,17 @@ public class LoginTest extends BaseTest {
                 "Phải hiển thị thông báo tài khoản bị khóa/liên hệ quản trị");
     }
 
+    /** TC_FN_07 - Mật khẩu phân biệt hoa thường. */
+    @Test(description = "TC_FN_07 - Mật khẩu phân biệt hoa thường")
+    public void tc_fn_07_passwordIsCaseSensitive() {
+        String pwd = validPassword.isEmpty() ? "abc@123" : swapCase(validPassword);
+        loginPage.typeUsername(validUsername)
+                 .typePassword(pwd)
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Mật khẩu sai hoa/thường mà vẫn đăng nhập được. URL: " + loginPage.getCurrentUrl());
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
