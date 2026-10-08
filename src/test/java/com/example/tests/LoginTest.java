@@ -103,6 +103,19 @@ public class LoginTest extends BaseTest {
                 "Vẫn còn ở trang login, không chuyển hướng. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_FN_04 - Đăng nhập sai mật khẩu. */
+    @Test(description = "TC_FN_04 - Đăng nhập sai mật khẩu")
+    public void tc_fn_04_loginWithWrongPassword() {
+        loginPage.typeUsername(validUsername)
+                 .typePassword("SaiMatKhau1")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Sai mật khẩu mà lại chuyển trang. URL: " + loginPage.getCurrentUrl());
+        String err = loginPage.getLoginErrorMessage();
+        Assert.assertFalse(err.isEmpty(),
+                "Phải hiển thị thông báo lỗi khi sai mật khẩu, nhưng không thấy");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
