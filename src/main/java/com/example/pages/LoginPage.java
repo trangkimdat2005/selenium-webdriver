@@ -1,13 +1,13 @@
 package com.example.pages;
 
+import java.time.Duration;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 /**
  * Page Object Model cho trang đăng nhập Văn phòng điện tử UTC.
@@ -19,13 +19,13 @@ public class LoginPage {
     private final WebDriverWait wait;
 
     // --- Locators ---
-    private final By usernameInput = By.id("username");              // Tên đăng nhập
-    private final By passwordInput = By.id("password");              // Mật khẩu
-    private final By loginButton   = By.cssSelector("button[type='submit']");
-    private final By rememberMe    = By.id("rememberMe");           // "Giữ tôi luôn đăng nhập"
+    private final By usernameInput = By.cssSelector("input[name='username']");   // Tên đăng nhập
+    private final By passwordInput = By.cssSelector("input[name='userpwd']");    // Mật khẩu
+    private final By loginButton   = By.cssSelector("input.submit_login[type='submit']");
+    private final By rememberMe    = By.id("persistent");                          // "Giữ tôi luôn đăng nhập"
     private final By loginErrorMsg = By.cssSelector(".alert-danger, .error-message, .text-danger, [role='alert']");
-    private final By usernameError = By.cssSelector("#username-error, .field-error.username");
-    private final By passwordError = By.cssSelector("#password-error, .field-error.password");
+    private final By usernameError = By.cssSelector("[data-valmsg-for='username'], .field-error.username");
+    private final By passwordError = By.cssSelector("[data-valmsg-for='userpwd'], .field-error.password");
     private final By userMenu      = By.cssSelector(".user-info, .user-menu, .account, [data-testid='user-menu']");
 
     public LoginPage(WebDriver driver) {
