@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.testng.Assert;
 import org.testng.ITestResult;
+import org.testng.SkipException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -21,13 +22,23 @@ import com.example.pages.LoginPage;
  * Tài liệu: TestCase_ChucNangDangNhap_VPDT_UTC.xlsx
  *
  * Mỗi test method tương ứng 1 TC; mỗi TC commit riêng theo workspace rule.
- * File testdata.properties chứa:
- *   - valid.username, valid.password  (tài khoản hợp lệ)
- *   - locked.username, locked.password (tài khoản bị khóa)
+ *
+ * Tài khoản test được đọc theo thứ tự ưu tiên:
+ *   1. Biến môi trường (khuyến nghị, đặc biệt cho CI):
+ *        TEST_VALID_USERNAME, TEST_VALID_PASSWORD
+ *        TEST_LOCKED_USERNAME, TEST_LOCKED_PASSWORD
+ *   2. File testdata.properties (chỉ dùng local, không commit credentials).
+ * Nếu cả hai đều rỗng, các test cần credential sẽ tự SKIPPED.
  */
 public class LoginTest extends BaseTest {
 
     private static final String LOGIN_URL = "https://vanphongdientu.utc.edu.vn/Login";
+
+    // Tên biến môi trường để tránh "magic string" rải rác.
+    private static final String ENV_VALID_USER  = "TEST_VALID_USERNAME";
+    private static final String ENV_VALID_PASS  = "TEST_VALID_PASSWORD";
+    private static final String ENV_LOCKED_USER = "TEST_LOCKED_USERNAME";
+    private static final String ENV_LOCKED_PASS = "TEST_LOCKED_PASSWORD";
 
     protected LoginPage loginPage;
     protected static String validUsername;
@@ -40,13 +51,49 @@ public class LoginTest extends BaseTest {
         Properties p = new Properties();
         try (InputStream in = getClass().getClassLoader()
                 .getResourceAsStream("testdata.properties")) {
-            Assert.assertNotNull(in, "Không tìm thấy testdata.properties trong classpath");
-            p.load(in);
+            // Không bắt buộc phải có file: có thể dùng 100% env vars.
+            if (in != null) p.load(in);
         }
-        validUsername = p.getProperty("valid.username", "");
-        validPassword = p.getProperty("valid.password", "");
-        lockedUsername = p.getProperty("locked.username", "");
-        lockedPassword = p.getProperty("locked.password", "");
+        // Env var > file. Rỗng khi cả 2 cùng thiếu -> caller tự SKIP.
+        validUsername  = firstNonBlank(System.getenv(ENV_VALID_USER),  p.getProperty("valid.username", ""));
+        validPassword  = firstNonBlank(System.getenv(ENV_VALID_PASS),  p.getProperty("valid.password", ""));
+        lockedUsername = firstNonBlank(System.getenv(ENV_LOCKED_USER), p.getProperty("locked.username", ""));
+        lockedPassword = firstNonBlank(System.getenv(ENV_LOCKED_PASS), p.getProperty("locked.password", ""));
+    }
+
+    /** Trả về giá trị đầu tiên không null và không blank; null nếu cả hai đều rỗng. */
+    private static String firstNonBlank(String a, String b) {
+        if (a != null && !a.isBlank()) return a.trim();
+        if (b != null && !b.isBlank()) return b.trim();
+        return "";
+    }
+
+    /**
+     * Trả về credential nếu có, ngược lại ném SkipException để TestNG đánh
+     * dấu SKIPPED thay vì FAIL. Đây là cách an toàn nhất khi chạy
+     * trên CI mà chưa cấu hình secret.
+     */
+    protected String requireValidUsername() {
+        return requireCredential("valid.username", ENV_VALID_USER, validUsername);
+    }
+
+    protected String requireValidPassword() {
+        return requireCredential("valid.password", ENV_VALID_PASS, validPassword);
+    }
+
+    protected String requireLockedUsername() {
+        return requireCredential("locked.username", ENV_LOCKED_USER, lockedUsername);
+    }
+
+    protected String requireLockedPassword() {
+        return requireCredential("locked.password", ENV_LOCKED_PASS, lockedPassword);
+    }
+
+    private String requireCredential(String label, String envName, String current) {
+        if (current != null && !current.isBlank()) return current.trim();
+        throw new SkipException(
+            "Thiếu credential cho '" + label + "'. Cần set biến môi trường "
+            + envName + " hoặc khai báo trong testdata.properties.");
     }
 
     @Parameters("browser")
@@ -76,8 +123,8 @@ public class LoginTest extends BaseTest {
     /** TC_FN_01 - Đăng nhập thành công với tài khoản hợp lệ. */
     @Test(description = "TC_FN_01 - Đăng nhập thành công với tài khoản hợp lệ")
     public void tc_fn_01_loginSuccessWithValidAccount() {
-        loginPage.typeUsername(validUsername)
-                 .typePassword(validPassword)
+        loginPage.typeUsername(requireValidUsername())
+                 .typePassword(requireValidPassword())
                  .clickLogin();
         Assert.assertTrue(loginPage.isLoggedIn(),
                 "Đăng nhập thất bại với tài khoản hợp lệ. URL: " + loginPage.getCurrentUrl());
@@ -89,8 +136,8 @@ public class LoginTest extends BaseTest {
         /** TC_FN_02 - Đăng nhập bằng phím Enter. */
     @Test(description = "TC_FN_02 - Đăng nhập bằng phím Enter")
     public void tc_fn_02_loginWithEnterKey() {
-        loginPage.typeUsername(validUsername)
-                 .typePassword(validPassword)
+        loginPage.typeUsername(requireValidUsername())
+                 .typePassword(requireValidPassword())
                  .submitWithEnterOnPassword();
         Assert.assertTrue(loginPage.isLoggedIn(),
                 "Phím Enter không submit form. URL: " + loginPage.getCurrentUrl());
@@ -102,8 +149,8 @@ public class LoginTest extends BaseTest {
         String r = "https://vanphongdientu.utc.edu.vn/";
         driver.get(LOGIN_URL + "?r=" + java.net.URLEncoder.encode(r, java.nio.charset.StandardCharsets.UTF_8));
         loginPage.waitForPageLoaded();
-        loginPage.typeUsername(validUsername)
-                 .typePassword(validPassword)
+        loginPage.typeUsername(requireValidUsername())
+                 .typePassword(requireValidPassword())
                  .clickLogin();
         Assert.assertFalse(loginPage.isOnLoginPage(),
                 "Vẫn còn ở trang login, không chuyển hướng. URL: " + loginPage.getCurrentUrl());
@@ -112,7 +159,7 @@ public class LoginTest extends BaseTest {
     /** TC_FN_04 - Đăng nhập sai mật khẩu. */
     @Test(description = "TC_FN_04 - Đăng nhập sai mật khẩu")
     public void tc_fn_04_loginWithWrongPassword() {
-        loginPage.typeUsername(validUsername)
+        loginPage.typeUsername(requireValidUsername())
                  .typePassword("SaiMatKhau1")
                  .clickLogin();
         Assert.assertTrue(loginPage.isOnLoginPage(),
@@ -138,10 +185,8 @@ public class LoginTest extends BaseTest {
     /** TC_FN_06 - Tài khoản bị khóa. */
     @Test(description = "TC_FN_06 - Tài khoản bị khóa/vô hiệu hóa")
     public void tc_fn_06_lockedAccount() {
-        Assert.assertFalse(lockedUsername.isEmpty(),
-                "Cần cấu hình locked.username trong testdata.properties");
-        loginPage.typeUsername(lockedUsername)
-                 .typePassword(lockedPassword)
+        loginPage.typeUsername(requireLockedUsername())
+                 .typePassword(requireLockedPassword())
                  .clickLogin();
         Assert.assertTrue(loginPage.isOnLoginPage(),
                 "TK bị khóa mà lại đăng nhập được. URL: " + loginPage.getCurrentUrl());
@@ -153,8 +198,8 @@ public class LoginTest extends BaseTest {
     /** TC_FN_07 - Mật khẩu phân biệt hoa thường. */
     @Test(description = "TC_FN_07 - Mật khẩu phân biệt hoa thường")
     public void tc_fn_07_passwordIsCaseSensitive() {
-        String pwd = validPassword.isEmpty() ? "abc@123" : swapCase(validPassword);
-        loginPage.typeUsername(validUsername)
+        String pwd = validPassword.isEmpty() ? "abc@123" : swapCase(requireValidPassword());
+        loginPage.typeUsername(requireValidUsername())
                  .typePassword(pwd)
                  .clickLogin();
         Assert.assertTrue(loginPage.isOnLoginPage(),
@@ -164,8 +209,8 @@ public class LoginTest extends BaseTest {
     /** TC_FN_08 - Tên đăng nhập có khoảng trắng đầu/cuối. */
     @Test(description = "TC_FN_08 - Username có khoảng trắng đầu/cuối")
     public void tc_fn_08_usernameWithLeadingTrailingSpaces() {
-        loginPage.typeUsername("  " + validUsername + "  ")
-                 .typePassword(validPassword)
+        loginPage.typeUsername("  " + requireValidUsername() + "  ")
+                 .typePassword(requireValidPassword())
                  .clickLogin();
         Assert.assertTrue(loginPage.isLoggedIn() || loginPage.isOnLoginPage(),
                 "Trạng thái không xác định. URL: " + loginPage.getCurrentUrl());
@@ -178,8 +223,8 @@ public class LoginTest extends BaseTest {
     /** TC_FN_09 - Tên đăng nhập không phân biệt hoa thường. */
     @Test(description = "TC_FN_09 - Username không phân biệt hoa thường")
     public void tc_fn_09_usernameIsCaseInsensitive() {
-        loginPage.typeUsername(validUsername.toUpperCase())
-                 .typePassword(validPassword)
+        loginPage.typeUsername(requireValidUsername().toUpperCase())
+                 .typePassword(requireValidPassword())
                  .clickLogin();
         Assert.assertTrue(loginPage.isLoggedIn() || loginPage.isOnLoginPage(),
                 "Trạng thái không xác định. URL: " + loginPage.getCurrentUrl());
@@ -192,8 +237,8 @@ public class LoginTest extends BaseTest {
     /** TC_FN_10 - Đăng nhập khi đã đăng nhập sẵn. */
     @Test(description = "TC_FN_10 - Đã đăng nhập thì vào lại /Login")
     public void tc_fn_10_alreadyLoggedIn() {
-        Assert.assertFalse(validUsername.isEmpty(),
-                "Cần valid.username trong testdata.properties");
+        // Cần username thật để server biết session hợp lệ.
+        requireValidUsername();
         driver.manage().addCookie(new org.openqa.selenium.Cookie.Builder(".AspNetCore.Session", "fake-session-cookie")
                 .domain("vanphongdientu.utc.edu.vn")
                 .path("/")
@@ -220,8 +265,8 @@ public class LoginTest extends BaseTest {
     /** TC_FN_12 - Double-click nút Đăng nhập. */
     @Test(description = "TC_FN_12 - Double-click nút Đăng nhập")
     public void tc_fn_12_doubleClickLogin() {
-        loginPage.typeUsername(validUsername)
-                 .typePassword(validPassword);
+        loginPage.typeUsername(requireValidUsername())
+                 .typePassword(requireValidPassword());
         loginPage.doubleClickLogin();
         Assert.assertTrue(loginPage.isLoggedIn() || loginPage.isOnLoginPage(),
                 "Double-click gây lỗi. URL: " + loginPage.getCurrentUrl());
@@ -244,7 +289,7 @@ public class LoginTest extends BaseTest {
     /** TC_FN_14 - Chống SQL Injection ở ô Password. */
     @Test(description = "TC_FN_14 - SQL Injection ở Password")
     public void tc_fn_14_sqlInjectionPassword() {
-        loginPage.typeUsername(validUsername)
+        loginPage.typeUsername(requireValidUsername())
                  .typePassword("' OR '1'='1")
                  .clickLogin();
         Assert.assertTrue(loginPage.isOnLoginPage(),
@@ -258,10 +303,14 @@ public class LoginTest extends BaseTest {
     /** TC_FN_15 - Khóa/giới hạn sau nhiều lần đăng nhập sai. */
     @Test(description = "TC_FN_15 - Khóa tạm sau nhiều lần đăng nhập sai")
     public void tc_fn_15_lockAfterMultipleFailures() {
+        // Mỗi vòng lặp phải re-find element vì server có thể trả về
+        // HTML mới sau mỗi lần submit fail → tránh StaleElementReferenceException.
         for (int i = 0; i < 7; i++) {
-            loginPage.typeUsername(validUsername)
-                     .typePassword("wrong-" + i)
-                     .clickLogin();
+            new LoginPage(driver)
+                    .open(LOGIN_URL)
+                    .typeUsername(requireValidUsername())
+                    .typePassword("wrong-" + i)
+                    .clickLogin();
             Assert.assertTrue(loginPage.isOnLoginPage(),
                     "Sai mật khẩu lần " + (i + 1) + " mà lại đăng nhập được");
         }
@@ -302,7 +351,7 @@ public class LoginTest extends BaseTest {
     /** TC_VAL_03 - Để trống Mật khẩu. */
     @Test(description = "TC_VAL_03 - Để trống Mật khẩu")
     public void tc_val_03_emptyPassword() {
-        String username = validUsername.isEmpty() ? "username" : validUsername;
+        String username = requireValidUsername();
         loginPage.typeUsername(username)
                  .typePassword("")
                  .clickLogin();
@@ -372,10 +421,8 @@ public class LoginTest extends BaseTest {
     /** TC_REM_01 - Tick "Giữ tôi luôn đăng nhập". */
     @Test(description = "TC_REM_01 - Đăng nhập có tick 'Giữ đăng nhập'")
     public void tc_rem_01_rememberMeLogin() {
-        Assert.assertFalse(validUsername.isEmpty(),
-                "Cần valid.username trong testdata.properties");
-        loginPage.typeUsername(validUsername)
-                 .typePassword(validPassword)
+        loginPage.typeUsername(requireValidUsername())
+                 .typePassword(requireValidPassword())
                  .tickRememberMe()
                  .clickLogin();
         Assert.assertTrue(loginPage.isLoggedIn(),
@@ -390,10 +437,8 @@ public class LoginTest extends BaseTest {
     /** TC_REM_02 - Không tick "Giữ đăng nhập". */
     @Test(description = "TC_REM_02 - Đăng nhập không tick 'Giữ đăng nhập'")
     public void tc_rem_02_noRememberMeLogin() {
-        Assert.assertFalse(validUsername.isEmpty(),
-                "Cần valid.username trong testdata.properties");
-        loginPage.typeUsername(validUsername)
-                 .typePassword(validPassword)
+        loginPage.typeUsername(requireValidUsername())
+                 .typePassword(requireValidPassword())
                  .uncheckRememberMe()
                  .clickLogin();
         Assert.assertTrue(loginPage.isLoggedIn(),
@@ -403,10 +448,8 @@ public class LoginTest extends BaseTest {
     /** TC_REM_03 - Đăng xuất khi đang bật "Giữ đăng nhập". */
     @Test(description = "TC_REM_03 - Đăng xuất khi đang bật Giữ đăng nhập")
     public void tc_rem_03_logoutAfterRememberMe() {
-        Assert.assertFalse(validUsername.isEmpty(),
-                "Cần valid.username trong testdata.properties");
-        loginPage.typeUsername(validUsername)
-                 .typePassword(validPassword)
+        loginPage.typeUsername(requireValidUsername())
+                 .typePassword(requireValidPassword())
                  .tickRememberMe()
                  .clickLogin();
         Assert.assertTrue(loginPage.isLoggedIn(), "Không đăng nhập được");
