@@ -262,6 +262,21 @@ public class LoginTest extends BaseTest {
                 "Sau nhiều lần sai, vẫn phải ở trang login. URL: " + loginPage.getCurrentUrl());
     }
 
+    /** TC_VAL_01 - Để trống cả hai trường. */
+    @Test(description = "TC_VAL_01 - Để trống cả hai trường")
+    public void tc_val_01_bothFieldsEmpty() {
+        loginPage.typeUsername("")
+                 .typePassword("")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Trống cả 2 trường mà form lại submit đi. URL: " + loginPage.getCurrentUrl());
+        String u = loginPage.getUsernameFieldError();
+        String p = loginPage.getPasswordFieldError();
+        String e = loginPage.getLoginErrorMessage();
+        Assert.assertTrue(!u.isEmpty() || !p.isEmpty() || !e.isEmpty(),
+                "Phải báo lỗi yêu cầu nhập Username và Password");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
