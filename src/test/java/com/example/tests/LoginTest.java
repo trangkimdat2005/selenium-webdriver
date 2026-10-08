@@ -308,6 +308,21 @@ public class LoginTest extends BaseTest {
                 "Username đã nhập phải được giữ lại sau khi đăng nhập thất bại");
     }
 
+    /** TC_VAL_04 - Chỉ nhập khoảng trắng. */
+    @Test(description = "TC_VAL_04 - Chỉ nhập khoảng trắng")
+    public void tc_val_04_whitespaceOnly() {
+        loginPage.typeUsername("     ")
+                 .typePassword("     ")
+                 .clickLogin();
+        Assert.assertTrue(loginPage.isOnLoginPage(),
+                "Chỉ nhập khoảng trắng mà form submit. URL: " + loginPage.getCurrentUrl());
+        String e = loginPage.getLoginErrorMessage();
+        String u = loginPage.getUsernameFieldError();
+        String p = loginPage.getPasswordFieldError();
+        Assert.assertTrue(!e.isEmpty() || !u.isEmpty() || !p.isEmpty(),
+                "Phải báo lỗi bắt buộc nhập khi chỉ có khoảng trắng");
+    }
+
 // ===== TC_NEXT =====
 
     /** Đảo hoa/thường cho mỗi ký tự chữ cái. */
